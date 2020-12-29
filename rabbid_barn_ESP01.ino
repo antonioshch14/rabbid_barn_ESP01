@@ -5,21 +5,137 @@
 */
 
 
+#include <WebSocketsServer.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
+#include <ESP8266WebServer.h> 
+#include <FS.h>
+//#define test
+#ifdef test
+#define LOG(x) Serial.println(x);
+IPAddress WebInt(192, 168, 5, 1);
+IPAddress WebGetaway(192, 168, 5, 1);
+IPAddress WebSubnet(255, 255, 255, 0);
+IPAddress TCP_Server(192, 168, 4, 1);
+IPAddress TCP_Gateway(192, 168, 4, 1);
+IPAddress TCP_Subnet(255, 255, 255, 0);
+IPAddress Own(192, 168, 4, 102);
+const String  Devicename = "2";//device name for ESP for refrigerator
+#else
+#define LOG(x);
+IPAddress WebInt(192, 168, 5, 1);
+IPAddress WebGetaway(192, 168, 5, 1);
+IPAddress WebSubnet(255, 255, 255, 0);
+IPAddress TCP_Server(192, 168, 4, 1);
+IPAddress TCP_Gateway(192, 168, 4, 1);
+IPAddress TCP_Subnet(255, 255, 255, 0);
+IPAddress Own(192, 168, 4, 101);
+const String  Devicename = "1";//device name for ESP for refrigerator
+#endif
+#define TCPPort_Web_Client 80
+#define TCPPort_Websocket 81
+#define  TCPPort 2390
 
 const char* ssid = "DataTransfer";
 const char* password = "BelovSer";//"DataTransfer", "Belov"
-const String  Devicename = "1";//device name for ESP for refrigerator
 
-  // WIFI Module Role & Port
-IPAddress     TCP_Server(192, 168, 4, 1);
-IPAddress     TCP_Gateway(192, 168, 4, 1);
-IPAddress     TCP_Subnet(255, 255, 255, 0);
-IPAddress Own(192, 168, 4, 101);
-unsigned int  TCPPort = 2390;
+const char* web_ssid = "RabbitBarn";
+const char* web_password = "Belov_628";
+
 
 WiFiClient    TCP_Client;
+WebSocketsServer webSocket = WebSocketsServer(TCPPort_Websocket);
+WiFiServer  TCP_SERVER(TCPPort);
+ESP8266WebServer server(TCPPort_Web_Client);
+#include "web&file_setup.h"
+String temp, humid, status, air;
+namespace dataUNO {
+	namespace {
+		byte nibble(char c)
+		{
+			if (c >= '0' && c <= '9')
+				return c - '0';
+
+			if (c >= 'a' && c <= 'f')
+				return c - 'a' + 10;
+
+			if (c >= 'A' && c <= 'F')
+				return c - 'A' + 10;
+
+			return 0;  // Not a valid hexadecimal character
+		}
+		byte getByte(String data) {
+			byte state = B00000000;
+			if (data.length() > 1) {
+				state = nibble(data[0]) << 4;
+				state |= nibble(data[1]);
+			}
+			else state |= nibble(data[0]);
+			return state;
+		}
+	}
+	/*float temp;
+	float humid;
+	int humidAwer;
+	byte state;
+	String timeLeft;
+	String timeSet;*/
+
+	void parseInput(String data) { /*("{" + String(DHTInDoor.tempBuf) + "," + String(DHTInDoor.humidBuf) + "," +
+		String(DHTOutDoor.tempBuf) + "," + String(DHTOutDoor.humidBuf) + "," + String(sun.valueBuf) + "," +
+			String(air.valueBuf) + "," + dataString + "," + String(mq135test.valueBuf) + "," + String(mq9test.valueBuf) + "}"*/
+		//temp, humid, status, air
+		LOG(data)
+			webSocket.broadcastTXT(data);
+		int beginning = data.indexOf('{') + 1;
+		int fullEnd = data.indexOf('}');
+		if (beginning != 0 && fullEnd != 0) {
+			int currentEnd = data.indexOf(',', beginning);
+			temp = data.substring(beginning, currentEnd);
+			
+			beginning = currentEnd + 1;
+			currentEnd = data.indexOf(',', beginning);
+			humid = data.substring(beginning, currentEnd);
+			for (int i = 0; i < 4; i++) {
+				beginning = currentEnd + 1;
+				currentEnd = data.indexOf(',', beginning);
+			}
+			
+			air = data.substring(beginning, currentEnd);
+			
+			beginning = currentEnd + 1;
+			currentEnd = data.indexOf(',', beginning);
+			status = data.substring(beginning, currentEnd);
+			LOG(temp+"  "+humid+"  "+ air + "   " + status)
+			
+
+			/*if (get_field_valueString(message, "temp:", &value)) temp = value;
+		if (get_field_valueString(message, "humid:", &value)) humid = value;
+		if (get_field_valueString(message, "status:", &value)) status = value;
+		if (get_field_valueString(message, "air:", &value)) air = value;*/
+
+			/*Serial.println(dataUNO::state, BIN);
+			if (bitRead(dataUNO::state, 0))LOG("deodorantActivated=true")
+			else LOG("deodorantActivated=false")
+			if (bitRead(dataUNO::state, 1))LOG("humanBodyDeteckted=true")
+			else LOG("humanBodyDeteckted=false")
+			if (bitRead(dataUNO::state, 2))LOG("buttonStart=true")
+			else LOG("buttonStart=false")
+			if (bitRead(dataUNO::state, 3))LOG("fanWork=true")
+			else LOG("fanWork=false")
+			if (bitRead(dataUNO::state, 4))LOG("webStart=true")
+			else LOG("webStart=false")
+			if (bitRead(dataUNO::state, 5))LOG("humidStart=true")
+			else LOG("humidStart=false")
+			if (bitRead(dataUNO::state, 6))LOG("coutnFull=true")
+			else LOG("coutnFull=false")
+			if (bitRead(dataUNO::state, 7))LOG("light=true")
+			else LOG("light=false")*/
+		}
+	}
+
+};
+
 bool connectionTried = false;
 bool  connectionEstablished = false;
 unsigned long timeConnectioTried, timeAttemptToConnect, checkconnection;
@@ -31,7 +147,7 @@ unsigned long lastNTPResponse;
 unsigned long lastUpdateTime = 0; // Track the last update time
 const unsigned long postingInterval = 5L * 1000L; // s
 // const unsigned long updateInterval = 15L * 1000L; // Update once every 15 seconds
-String temp, humid, status, air;
+
 class TimeSet {
 	int monthDays[12] = { 31,28,31,30,31,30,31,31,30,31,30,31 }; // API starts months from 1, this array starts from 0
 	int *shift;
@@ -207,14 +323,33 @@ task taskSendConf2UNO(50000);
 task task_getLogStringFromUNO(2000);
 task askTimeTask(20000);
 task task_sendTimeToUno(60000);
+task task_checkClient(5000);
 void setup() {
 	Serial.begin(9600);
-	WiFi.hostname("ESP_rabbit_barn");      // DHCP Hostname (useful for finding device for static lease)
-	WiFi.config(Own, TCP_Gateway, TCP_Subnet);
-	//Check_WiFi_and_Connect_or_Reconnect();          // Checking For Connection
-	//WiFiClient::setLocalPortStart(2391);
+	WiFi.mode(WIFI_AP_STA);//WIFI_STA WIFI_AP_STA 
+	setupWeb();
+	setupClient();
+	//server.on("/", HTTP_GET, handleFileRead);
+	server.onNotFound([]() {                              // If the client requests any URI
+		if (!handleFileRead(server.uri()))                  // send it if it exists
+			server.send(404, "text/plain", "404: Not Found"); // otherwise, respond with a 404 (Not Found) error
+	});
+	server.begin();                           // Actually start the server
+	webSocket.begin();                          // start the websocket server
+	startSPIFFS();
+	webSocket.onEvent(webSocketEvent);          // if there's an incomming websocket message, go to function 'webSocketEvent'
 }
-
+void webSocketEvent(byte num, WStype_t type, uint8_t* payload, size_t length)
+{
+	if (length) {
+		
+		String messageSt;
+		for (int i = 0; i < length; i++) messageSt += (char)payload[i];
+		LOG("websocket got:" + messageSt);
+		Serial.println(messageSt);
+		
+	}
+}
 
 void Send_Request_To_Server(String dataToSend) {
 	TCP_Client.setNoDelay(1);
@@ -224,44 +359,47 @@ void Send_Request_To_Server(String dataToSend) {
 
 //====================================================================================
 
-void Check_WiFi_and_Connect() {
-	//Serial.println("Not Connected...trying to connect...");
-	yield();
-	WiFi.mode(WIFI_STA);                                // station (Client) Only - to avoid broadcasting an SSID ??
-	//WiFi.begin(ssid, password,0);                    // the SSID that we want to connect to
-	WiFi.begin(ssid, password);
-	//Serial.println("ssid: " + String(ssid) + "  password:" + String(password));
-}
+//void Check_WiFi_and_Connect() {
+//	//Serial.println("Not Connected...trying to connect...");
+//	yield();
+//	WiFi.mode(WIFI_STA);                                // station (Client) Only - to avoid broadcasting an SSID ??
+//	//WiFi.begin(ssid, password,0);                    // the SSID that we want to connect to
+//	WiFi.begin(ssid, password);
+//	//Serial.println("ssid: " + String(ssid) + "  password:" + String(password));
+//}
 
-void Print_connection_status() {
-
-	// Printing IP Address --------------------------------------------------
-	//Serial.println("Connected To      : " + String(WiFi.SSID()));
-	//Serial.println("Signal Strenght   : " + String(WiFi.RSSI()) + " dBm");
-	//Serial.print("Server IP Address : ");
-	//Serial.println(TCP_Server);
-	//Serial.print("Device IP Address : ");
-	//Serial.println(WiFi.localIP());
-
-	// conecting as a client -------------------------------------
-	Tell_Server_we_are_there();
-}
+//void Print_connection_status() {
+//
+//	// Printing IP Address --------------------------------------------------
+//	//Serial.println("Connected To      : " + String(WiFi.SSID()));
+//	//Serial.println("Signal Strenght   : " + String(WiFi.RSSI()) + " dBm");
+//	//Serial.print("Server IP Address : ");
+//	//Serial.println(TCP_Server);
+//	//Serial.print("Device IP Address : ");
+//	//Serial.println(WiFi.localIP());
+//
+//	// conecting as a client -------------------------------------
+//	Tell_Server_we_are_there();
+//}
 
 //====================================================================================
 
-void Tell_Server_we_are_there() {
-	if (TCP_Client.connect(TCP_Server, TCPPort)) {
-		//Serial.println("<" + Devicename + "-CONNECTED>");
-		TCP_Client.println("<" + Devicename + "-CONNECTED>");
-		TCP_Client.println(fieldsInLogMes);
-		
-	}
-	TCP_Client.setNoDelay(1);                                     // allow fast communication?
-}
+
 
 //====================================================================================
 
 void loop() {
+	if (task_checkClient.check()) {
+		if (TCP_SERVER.hasClient()) {
+			WiFiClient Temp = TCP_SERVER.available();
+			IPAddress IP = Temp.remoteIP();
+			LOG("Conneted client ");
+			LOG(IP);
+			task_checkClient.ignor = true;
+		}
+	}
+
+
 	if (task_getLogStringFromUNO.ignor) {
 		Check_WiFi_and_Connect_or_Reconnect();          // Checking For Connection after recieving logstring from UNO
 	}
@@ -290,6 +428,8 @@ void loop() {
 	if (askTimeTask.check()) askTime();
 	actualtime = UNIXtime + (millis() - lastNTPResponse) / 1000;
 	if (task_sendTimeToUno.check()) Serial.println("hour:" + String(Time_set.hour()) + ";min:"+String( Time_set.min()) + ";");
+	server.handleClient();                    // Listen for HTTP requests from clients
+	webSocket.loop();
 	yield();
 }
 //==================================================
@@ -310,35 +450,35 @@ void askTime() {
 }
 
 
-void Check_WiFi_and_Connect_or_Reconnect() {
-	if (WiFi.status() != WL_CONNECTED) {
-
-		TCP_Client.stop();                                  //Make Sure Everything Is Reset
-		WiFi.disconnect();
-		//Serial.println("Not Connected...trying to connect...");
-		//delay(50);
-		WiFi.mode(WIFI_STA);                                // station (Client) Only - to avoid broadcasting an SSID ??
-		WiFi.begin(ssid, password);                         // the SSID that we want to connect to
-		for (int i = 0; i < 10; ++i) {
-			if (WiFi.status() != WL_CONNECTED) {
-				delay(500);
-				//Serial.print(".");
-			}
-			else {
-				//Serial.println("Connected To      : " + String(WiFi.SSID()));
-				//Serial.println("Signal Strenght   : " + String(WiFi.RSSI()) + " dBm");
-				//Serial.print("Server IP Address : ");
-				//Serial.println(TCP_Server);
-				//Serial.print("Device IP Address : ");
-				//Serial.println(WiFi.localIP());
-				// conecting as a client -------------------------------------
-				Tell_Server_we_are_there();
-				break;
-			}
-
-		}
-	}
-}
+//void Check_WiFi_and_Connect_or_Reconnect() {
+//	if (WiFi.status() != WL_CONNECTED) {
+//
+//		TCP_Client.stop();                                  //Make Sure Everything Is Reset
+//		WiFi.disconnect();
+//		//Serial.println("Not Connected...trying to connect...");
+//		//delay(50);
+//		WiFi.mode(WIFI_STA);                                // station (Client) Only - to avoid broadcasting an SSID ??
+//		WiFi.begin(ssid, password);                         // the SSID that we want to connect to
+//		for (int i = 0; i < 10; ++i) {
+//			if (WiFi.status() != WL_CONNECTED) {
+//				delay(500);
+//				//Serial.print(".");
+//			}
+//			else {
+//				//Serial.println("Connected To      : " + String(WiFi.SSID()));
+//				//Serial.println("Signal Strenght   : " + String(WiFi.RSSI()) + " dBm");
+//				//Serial.print("Server IP Address : ");
+//				//Serial.println(TCP_Server);
+//				//Serial.print("Device IP Address : ");
+//				//Serial.println(WiFi.localIP());
+//				// conecting as a client -------------------------------------
+//				Tell_Server_we_are_there();
+//				break;
+//			}
+//
+//		}
+//	}
+//}
 
 bool get_field_value_UL(String Message, String field, unsigned long* value, int* index) {
 	int fieldBegin = Message.indexOf(field) + field.length();
@@ -388,10 +528,12 @@ void ReadDataSerial() { //reads data from ESP serial and checks for validity the
 			Send_Request_To_Server(message);
 			return;
 		}
-		if (get_field_valueString(message, "temp:", &value)) temp = value;
+		else if (message.indexOf("{")!= -1) dataUNO::parseInput(Serial.readStringUntil('\r'));
+		/*if (get_field_valueString(message, "temp:", &value)) temp = value;
 		if (get_field_valueString(message, "humid:", &value)) humid = value;
 		if (get_field_valueString(message, "status:", &value)) status = value;
-		if (get_field_valueString(message, "air:", &value)) air = value;
+		if (get_field_valueString(message, "air:", &value)) air = value;*/
+
 		
 	}
 }

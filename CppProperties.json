@@ -1,0 +1,51 @@
+{
+  "configurations": [
+    {
+      "name": "Visual Micro",
+      "intelliSenseMode": "windows-msvc-x86",
+      "includePath": [
+        "${projectRoot}..\\rabbid_barn_ESP01",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\arduino\\scetchbook\\libraries\\arduinoWebSockets-master\\src",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\arduino\\scetchbook\\libraries\\ESP8266WiFi\\src",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\arduino\\scetchbook\\libraries\\ESP8266HTTPClient\\src",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\arduino\\scetchbook\\libraries\\ESP8266WebServer\\src",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\arduino\\scetchbook\\libraries\\Hash\\src",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\Users\\z003pr4u\\AppData\\Local\\arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.2\\cores\\esp8266",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\Users\\z003pr4u\\AppData\\Local\\arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.2\\cores\\esp8266\\avr",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\Users\\z003pr4u\\AppData\\Local\\arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.2\\cores\\esp8266\\libb64",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\Users\\z003pr4u\\AppData\\Local\\arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.2\\cores\\esp8266\\spiffs",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\Users\\z003pr4u\\AppData\\Local\\arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.2\\cores\\esp8266\\umm_malloc",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\Users\\z003pr4u\\AppData\\Local\\arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.2\\variants\\generic",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\Users\\z003pr4u\\AppData\\Local\\arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.2\\tools\\sdk\\include",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\Users\\z003pr4u\\AppData\\Local\\arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.2\\tools\\sdk\\lwip2\\include",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\Users\\z003pr4u\\AppData\\Local\\arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.2\\tools\\sdk\\libc\\xtensa-lx106-elf\\include",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\Users\\z003pr4u\\AppData\\Local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\xtensa-lx106-elf\\include\\c++\\4.8.2",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\Users\\z003pr4u\\AppData\\Local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\xtensa-lx106-elf\\include\\c++\\4.8.2\\xtensa-lx106-elf",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\Users\\z003pr4u\\AppData\\Local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\xtensa-lx106-elf\\include",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\Users\\z003pr4u\\AppData\\Local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\lib\\gcc\\xtensa-lx106-elf\\4.8.2\\include",
+        "${projectRoot}..\\..\\..\\..\\..\\..\\..\\Users\\z003pr4u\\AppData\\Local\\arduino15\\packages\\esp8266\\hardware\\esp8266\\2.6.2\\tools\\sdk\\include"
+      ],
+      "defines": [
+        "__ESP8266_esp8266__",
+        "__ESP8266_ESP8266__",
+        "_VMDEBUG=1",
+        "__ets__",
+        "ICACHE_FLASH",
+        "NONOSDK22x_190703=1",
+        "F_CPU=80000000L",
+        "LWIP_OPEN_SRC",
+        "TCP_MSS=536",
+        "LWIP_FEATURES=1",
+        "LWIP_IPV6=0",
+        "ARDUINO=108010",
+        "ARDUINO_ESP8266_GENERIC",
+        "ARDUINO_ARCH_ESP8266",
+        "LED_BUILTIN=2",
+        "FLASHMODE_DOUT",
+        "ESP8266",
+        "__cplusplus=201103L",
+        "_VMICRO_INTELLISENSE"
+      ]
+    }
+  ]
+}
